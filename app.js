@@ -6,6 +6,16 @@ const CONFIG_KEY_B64 = "xGIPtGtgoLwoB4mePc/bAAbi1kDAXF3vw2CxC7uxrC4=";
 const CONFIG_IV_B64  = "4yYUnxeWssX13VJJRh7IZA==";
 
 // ---- Base64 helpers ----
+function normalizeBase64(str) {
+  if (!str) return "";
+  return str
+    .trim()
+    // handle escaped equals like "\u003d\u003d"
+    .replace(/\\u003d/gi, "=")
+    // remove anything that's not a valid base64 char
+    .replace(/[^A-Za-z0-9+/=]/g, "");
+}
+
 function bytesToBase64(bytes) {
   let binary = "";
   for (let i = 0; i < bytes.length; i++) {
@@ -15,7 +25,11 @@ function bytesToBase64(bytes) {
 }
 
 function base64ToBytes(base64) {
-  const binary = atob(base64);
+  const clean = normalizeBase64(base64);
+  if (!clean) {
+    throw new Error("Empty or invalid Base64 string");
+  }
+  const binary = atob(clean);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
     bytes[i] = binary.charCodeAt(i);
@@ -52,7 +66,7 @@ async function encryptAesCbcPkcs7(plaintext) {
   const encryptedBuffer = await crypto.subtle.encrypt(
     {
       name: "AES-CBC",
-      iv: IV_BYTES, // static IV (like your Kotlin code)
+      iv: IV_BYTES, // static IV like in Kotlin
     },
     key,
     data
@@ -64,8 +78,8 @@ async function encryptAesCbcPkcs7(plaintext) {
 
 // ---- Decrypt (AES/CBC/PKCS5/PKCS7) ----
 async function decryptAesCbcPkcs7(base64Ciphertext) {
+  const bytes = base64ToBytes(base64Ciphertext);
   const key = await getAesCbcKey();
-  const cipherBytes = base64ToBytes(base64Ciphertext.trim());
 
   const decryptedBuffer = await crypto.subtle.decrypt(
     {
@@ -73,7 +87,7 @@ async function decryptAesCbcPkcs7(base64Ciphertext) {
       iv: IV_BYTES,
     },
     key,
-    cipherBytes
+    bytes
   );
 
   const dec = new TextDecoder();
@@ -90,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginPassword = document.getElementById("login-password");
   const loginError = document.getElementById("login-error");
 
-  // we still grab this element, but it's no longer used for crypto (key is static)
+  // present but unused for crypto now (key is static)
   const cryptoPasswordInput = document.getElementById("crypto-password");
 
   const plaintextInput = document.getElementById("plaintext");
@@ -146,16 +160,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Decrypt button
   decryptBtn.addEventListener("click", async () => {
-    const cipherB64 = ciphertextIn.value.trim();
+    const rawCipher = ciphertextIn.value;
 
-    if (!cipherB64) {
+    if (!rawCipher.trim()) {
       showStatus("Paste Base64 ciphertext to decrypt.", true);
       return;
     }
 
     try {
       showStatus("Decrypting...");
-      const pt = await decryptAesCbcPkcs7(cipherB64);
+      const pt = await decryptAesCbcPkcs7(rawCipher);
       plaintextOut.value = pt;
       showStatus("Decryption successful.");
     } catch (err) {
