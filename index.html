@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AES-GCM PBKDF2 Tool</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <h1>AES-GCM  Tool</h1>
+    </header>
+
+    <!-- LOGIN -->
+    <main>
+      <section id="login-section" class="card">
+        <h2>Sign in</h2>
+        <p class="hint">
+          Demo login (hard-coded): <code>cm@epidi.com</code> / <code>Test1234!</code>
+        </p>
+        <form id="login-form">
+          <label>
+            Email
+            <input type="email" id="login-email" required autocomplete="username" />
+          </label>
+          <label>
+            Password
+            <input type="password" id="login-password" required autocomplete="current-password" />
+          </label>
+          <button type="submit" class="btn primary">Login</button>
+          <p id="login-error" class="error"></p>
+        </form>
+      </section>
+
+      <!-- APP -->
+      <section id="app-section" class="hidden">
+
+        <div class="grid">
+          <div class="card">
+            <h2>Encrypt</h2>
+            <label>
+              Plaintext
+              <textarea id="plaintext" rows="6" placeholder="Enter text to encrypt..."></textarea>
+            </label>
+            <button id="encrypt-btn" class="btn primary">Encrypt →</button>
+            <label>
+              Ciphertext (Base64)
+              <textarea id="ciphertext-out" rows="6" readonly></textarea>
+            </label>
+          </div>
+
+          <div class="card">
+            <h2>Decrypt</h2>
+            <label>
+              Ciphertext (Base64)
+              <textarea id="ciphertext-in" rows="6" placeholder="Paste Base64 here..."></textarea>
+            </label>
+            <button id="decrypt-btn" class="btn secondary">Decrypt →</button>
+            <label>
+              Plaintext
+              <textarea id="plaintext-out" rows="6" readonly></textarea>
+            </label>
+          </div>
+        </div>
+
+        <p id="status" class="status"></p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
